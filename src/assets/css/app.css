@@ -76,6 +76,20 @@
 }
 
 /*
+  vue-saform's FormSwitch only hugs its content and has no full-width option. Inside
+  `.switch-between` it spans the row, with the label on the left and the switch on the right.
+*/
+.switch-between .sa-fm--switch-wrap,
+.switch-between .sa-fm--switch {
+    display: flex;
+    width: 100%;
+}
+
+.switch-between .sa-fm--switch {
+    justify-content: space-between;
+}
+
+/*
   The default border color has changed to `currentcolor` in Tailwind CSS v4,
   so we've added these compatibility styles to make sure everything still
   looks the same as it did with Tailwind CSS v3.

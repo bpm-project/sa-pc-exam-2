@@ -49,7 +49,9 @@ const onNext = () => {
   </BasicCard>
 
   <BasicCard>
-    <FormSwitch v-model="agreed" switch-position="right" :label="t('cameraAgree.switchLabel')" />
+    <div class="switch-between">
+      <FormSwitch v-model="agreed" switch-position="right" :label="t('cameraAgree.switchLabel')" />
+    </div>
 
     <div class="flex gap-2 mt-3">
       <BasicButton :icon="faTimesCircle" expanded color="danger" @click="emit('back')">
