@@ -1,8 +1,34 @@
 use std::process::Command;
-use tauri::{command, Manager};
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::Arc;
+use std::time::Duration;
+use tauri::{command, Manager, State};
+
+/// Seconds before the device powers off after a shutdown command.
+/// Keep in sync with `WithShutdownLayout.vue`.
+const SHUTDOWN_DELAY_SECS: u32 = 20;
+
+/// Generation of the pending delayed shutdown on macOS and Linux, whose `shutdown` command only
+/// takes whole minutes. The delay runs inside the app, and bumping the generation cancels it.
+struct PendingShutdown(Arc<AtomicU64>);
+
+/// Powers the device off right away on macOS and Linux.
+fn power_off_now() {
+    let result = if cfg!(target_os = "macos") {
+        Command::new("osascript")
+            .args(["-e", "tell app \"System Events\" to shut down"])
+            .output()
+    } else {
+        Command::new("systemctl").arg("poweroff").output()
+    };
+
+    if let Err(err) = result {
+        eprintln!("power off failed: {err}");
+    }
+}
 
 #[command]
-fn trigger_shutdown_state(command: &str) -> Result<(), String> {
+fn trigger_shutdown_state(command: &str, pending: State<PendingShutdown>) -> Result<(), String> {
     let output = match command {
         "sleep" => {
             if cfg!(target_os = "windows") {
@@ -37,13 +63,21 @@ fn trigger_shutdown_state(command: &str) -> Result<(), String> {
                         "/s",
                         "/f",
                         "/t",
-                        "60",
+                        &SHUTDOWN_DELAY_SECS.to_string(),
                         "/c",
-                        "Komputer anda akan mati dalam 60 detik :)",
+                        &format!("Komputer anda akan mati dalam {SHUTDOWN_DELAY_SECS} detik :)"),
                     ])
                     .output()
             } else if cfg!(target_os = "macos") || cfg!(target_os = "linux") {
-                Command::new("shutdown").args(["-h", "+1"]).output()
+                let generation = pending.0.fetch_add(1, Ordering::SeqCst) + 1;
+                let current = Arc::clone(&pending.0);
+                std::thread::spawn(move || {
+                    std::thread::sleep(Duration::from_secs(u64::from(SHUTDOWN_DELAY_SECS)));
+                    if current.load(Ordering::SeqCst) == generation {
+                        power_off_now();
+                    }
+                });
+                return Ok(());
             } else {
                 return Err("Unsupported OS".into());
             }
@@ -52,10 +86,9 @@ fn trigger_shutdown_state(command: &str) -> Result<(), String> {
         "cancelShutdown" => {
             if cfg!(target_os = "windows") {
                 Command::new("shutdown").arg("/a").output()
-            } else if cfg!(target_os = "macos") {
-                Command::new("killall").arg("shutdown").output()
-            } else if cfg!(target_os = "linux") {
-                Command::new("shutdown").arg("-c").output()
+            } else if cfg!(target_os = "macos") || cfg!(target_os = "linux") {
+                pending.0.fetch_add(1, Ordering::SeqCst);
+                return Ok(());
             } else {
                 return Err("Unsupported OS".into());
             }
@@ -97,6 +130,7 @@ fn flag_enabled(value: Option<&str>) -> bool {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .manage(PendingShutdown(Arc::new(AtomicU64::new(0))))
         .setup(|app| {
             // tauri.conf.json already sets contentProtected to true, so only an explicit
             // VITE_CONTENT_PROTECTION=false in .env switches it off.

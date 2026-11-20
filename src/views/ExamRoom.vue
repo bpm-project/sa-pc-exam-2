@@ -26,7 +26,7 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import {translateDateRange} from "../assets/js/Mixins/TreeShake/dateTime.js";
 import {nthAlphabet} from "@/assets/js/Mixins/TreeShake/alphaNumeric.js";
 import {defaultDarkModeCheck} from "@/assets/js/Mixins/TreeShake/browserBehavior.js";
-import { saToast } from '@bpmlib/vue-satoast';
+import { saToast, useToastManager } from '@bpmlib/vue-satoast';
 import { onKeyStroke } from '@vueuse/core';
 import TheCalculator from "@/views/Component/TheCalculator.vue";
 
@@ -266,10 +266,26 @@ const getQuestionDetailByNumber = (index, id) => {
   getQuestionDetail(id);
 };
 
+const { mailQueue, handleClose: closeToast } = useToastManager();
+
+/**
+ * Shows an info toast and returns a function that removes it again.
+ *
+ * saToast does not return the toast id, but a toast is pushed synchronously and the queue keeps
+ * insertion order, so the last key is the toast that was just shown.
+ */
+const showRemovableToast = (message: string, duration: number): (() => void) => {
+  saToast.info(message, { duration });
+  const id = Array.from(mailQueue.keys()).pop();
+  return () => {
+    if (id) closeToast(id);
+  };
+};
+
 const selectOption = async (optionId, num) => {
   const opt = num + 1;
   const qNum = questionDetail.index + 1;
-  saToast.info(`${t('exam.warning.initAns', { ans: opt, num: qNum })}...`, { duration: 3 });
+  const removeSendingToast = showRemovableToast(`${t('exam.warning.initAns', { ans: opt, num: qNum })}...`, 3);
   const start = Date.now();
   await examReq
     .setBody({
@@ -292,7 +308,8 @@ const selectOption = async (optionId, num) => {
     .catch((error) => {
       saToast.error(error.message, { title: `${t('exam.warning.faultAns', { ans: opt, num: qNum })}` });
       pushAction('submit_ans', Date.now() - start, error.response.status);
-    });
+    })
+    .finally(removeSendingToast);
 };
 
 const descriptionAnswer = async () => {

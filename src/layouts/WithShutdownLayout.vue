@@ -31,11 +31,13 @@ function onEnter(el, done) {
 
 const willShutdown = ref(false);
 let shutdownTimer = null;
-const shutdownCt = ref(60);
+// Keep in sync with SHUTDOWN_DELAY_SECS in src-tauri/src/lib.rs
+const SHUTDOWN_DELAY_SECONDS = 20;
+const shutdownCt = ref(SHUTDOWN_DELAY_SECONDS);
 const shutPcDown = (command) => {
   if (command === 'shutdown') {
     willShutdown.value = true;
-    shutdownCt.value = 60;
+    shutdownCt.value = SHUTDOWN_DELAY_SECONDS;
     shutdownTimer = setInterval(() => {
       shutdownCt.value--;
       if (shutdownCt.value <= 0) {
