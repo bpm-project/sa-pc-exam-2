@@ -1,6 +1,7 @@
-<script setup>
+<script setup lang="ts">
 import NotificationCard from '@/components/Cards/NotificationCard.vue';
-import BasicButton from '@/components/Buttons/BasicButton.vue';
+import { BasicButton } from '@bpmlib/vue-sabutton';
+import { faArrowsRotate } from '@fortawesome/free-solid-svg-icons';
 
 defineProps({
   loadFunction: {
@@ -21,7 +22,7 @@ defineProps({
       <p class="text-sm mt-2">
         {{ error }}
       </p>
-      <basic-button icon="arrows-rotate" @click="loadFunction">Coba Lagi</basic-button>
+      <basic-button :icon="faArrowsRotate" @click="loadFunction">Coba Lagi</basic-button>
     </div>
   </NotificationCard>
 </template>

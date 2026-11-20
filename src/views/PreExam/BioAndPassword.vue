@@ -6,8 +6,9 @@ import { useI18n } from 'vue-i18n';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { saToast } from '@bpmlib/vue-satoast';
 import BasicCard from '@/components/Cards/BasicCard.vue';
-import FormInput from '@/components/Forms/FormInput.vue';
-import BasicButton from '@/components/Buttons/BasicButton.vue';
+import { FormInput } from '@bpmlib/vue-saform';
+import { BasicButton } from '@bpmlib/vue-sabutton';
+import { faFileSignature, faSave, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import LoadingCard from '@/components/Cards/LoadingCard.vue';
 import { page1Req, examReq } from '@/assets/js/Mixins/Class/Request';
 import meditationGif from '@/assets/img/gif/meditation.gif';
@@ -173,10 +174,10 @@ const startExam = () => {
     </BasicCard>
 
     <div class="flex gap-2">
-      <BasicButton icon="times-circle" expanded color="red" :disabled="bioForm.submitStatus === 0" @click="emit('back')">
+      <BasicButton :icon="faTimesCircle" expanded color="danger" :disabled="bioForm.submitStatus === 0" @click="emit('back')">
         {{ t('cameraBio.wrong') }}
       </BasicButton>
-      <BasicButton icon="save" form="field2" as-submit expanded color="green" :on-loading="bioForm.submitStatus === 0">
+      <BasicButton :icon="faSave" form="field2" as-submit expanded color="success" :on-loading="bioForm.submitStatus === 0">
         {{ t('cameraBio.next') }}
       </BasicButton>
     </div>
@@ -205,7 +206,7 @@ const startExam = () => {
       </form>
     </BasicCard>
 
-    <BasicButton icon="file-signature" form="field3" as-submit expanded color="green" @click="startExam()">
+    <BasicButton :icon="faFileSignature" form="field3" as-submit expanded color="success" @click="startExam()">
       {{ t('cameraPwd.start') }}
     </BasicButton>
   </template>

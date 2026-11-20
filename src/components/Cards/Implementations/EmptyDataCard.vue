@@ -1,6 +1,7 @@
-<script setup>
+<script setup lang="ts">
 import NotificationCard from '@/components/Cards/NotificationCard.vue';
-import BasicButton from '@/components/Buttons/BasicButton.vue';
+import { BasicButton } from '@bpmlib/vue-sabutton';
+import { faArrowsRotate } from '@fortawesome/free-solid-svg-icons';
 import BasicCard from "@/components/Cards/BasicCard.vue";
 
 defineProps({
@@ -27,7 +28,7 @@ defineProps({
       <font-awesome-icon icon="ghost" size="2x" class="truck text-subtitle" />
       <p class="text-xs italic text-subtitle">Maaf {{ notYet ? 'belum' : 'tidak' }} ada {{ theItem }} ._.</p>
       <div v-if="loadFunction" class="btn-group">
-        <BasicButton icon="arrows-rotate" @click="loadFunction">Coba Lagi</BasicButton>
+        <BasicButton :icon="faArrowsRotate" @click="loadFunction">Coba Lagi</BasicButton>
 
         <slot name="btn" />
       </div>
@@ -38,7 +39,7 @@ defineProps({
       <font-awesome-icon icon="ghost" size="2x" class="truck text-subtitle" />
       <p class="text-xs italic text-subtitle">Maaf {{ notYet ? 'belum' : 'tidak' }} ada {{ theItem }} ._.</p>
       <div v-if="loadFunction" class="btn-group">
-        <BasicButton icon="arrows-rotate" @click="loadFunction">Coba Lagi</BasicButton>
+        <BasicButton :icon="faArrowsRotate" @click="loadFunction">Coba Lagi</BasicButton>
 
         <slot name="btn" />
       </div>

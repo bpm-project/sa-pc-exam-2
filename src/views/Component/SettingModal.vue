@@ -1,13 +1,13 @@
-<script setup>
-import DialogModal from "@/components/Modals/DialogModal.vue";
-import FormSelect from "@/components/Forms/FormSelect.vue";
+<script setup lang="ts">
+import { DialogModal } from "@bpmlib/vue-samodal";
+import { FormInput, FormSelect } from "@bpmlib/vue-saform";
 import {useI18n} from "vue-i18n";
 import {onMounted, reactive, ref, watch} from "vue";
 import {changeDarkMode, defaultDarkModeCheck} from "@/assets/js/Mixins/TreeShake/browserBehavior.js";
-import BasicButton from "@/components/Buttons/BasicButton.vue";
+import { BasicButton } from '@bpmlib/vue-sabutton';
+import { faCheck, faPaperPlane, faTimes } from '@fortawesome/free-solid-svg-icons';
 import {faMagnifyingGlass, faLock} from "@fortawesome/free-solid-svg-icons";
 import {invoke} from "@tauri-apps/api/core";
-import FormInput from "@/components/Forms/FormInput.vue";
 
 defineProps({
   show: Boolean,
@@ -140,7 +140,7 @@ onMounted(() => {
   <!-- Main settings modal -->
   <DialogModal :show="show" @close="handleClose">
     <template #title>Pengaturan Aplikasi</template>
-    <template #content>
+    <template #default>
       <div class="grid grid-cols-1 divide-y divide-gray-500">
         <div class="grid grid-cols-1 md:grid-cols-[1.5fr_1fr] md:gap-4 items-center py-2">
           <div>
@@ -148,7 +148,7 @@ onMounted(() => {
             <p class="text-sm">Pengantar Aplikasi (Tidak termasuk pertanyaan)</p>
           </div>
           <div>
-            <FormSelect id="lang" v-model="selectLang" :options="langs" option-key="value" option-label="label"></FormSelect>
+            <FormSelect id="lang" v-model="selectLang" :options="langs"></FormSelect>
           </div>
         </div>
 
@@ -158,7 +158,7 @@ onMounted(() => {
             <p class="text-sm">Gelap/Terang</p>
           </div>
           <div>
-            <FormSelect id="lang" v-model="selectColor" :options="colors" option-key="value" option-label="label"></FormSelect>
+            <FormSelect id="color" v-model="selectColor" :options="colors"></FormSelect>
           </div>
         </div>
 
@@ -189,13 +189,13 @@ onMounted(() => {
   <!-- Password modal -->
   <DialogModal :show="hidden.showPasswordModal" @close="closePasswordModal">
     <template #title>Verifikasi Password</template>
-    <template #content>
-      <FormInput id="hiddenPass" label="Password Sistem" v-model="hidden.passInput" type="password" autocomplete="off" />
+    <template #default>
+      <FormInput id="hiddenPass" label="Password Sistem" v-model="hidden.passInput" type="password" />
     </template>
     <template #footer>
       <div class="flex justify-end gap-2">
-        <BasicButton color="red" icon="times" @click="closePasswordModal">Batal</BasicButton>
-        <BasicButton icon="paper-plane" @click="checkInput">Masuk</BasicButton>
+        <BasicButton color="danger" :icon="faTimes" @click="closePasswordModal">Batal</BasicButton>
+        <BasicButton :icon="faPaperPlane" @click="checkInput">Masuk</BasicButton>
       </div>
     </template>
   </DialogModal>
@@ -203,7 +203,7 @@ onMounted(() => {
   <!-- Hidden settings modal -->
   <DialogModal :show="hidden.showHiddenModal" @close="hidden.showHiddenModal = false">
     <template #title>Pengaturan Tersembunyi</template>
-    <template #content>
+    <template #default>
       <div class="grid grid-cols-1 divide-y divide-gray-500">
         <div class="grid grid-cols-1 md:grid-cols-[1.5fr_1fr] md:gap-4 items-center py-2">
           <div>
@@ -211,7 +211,7 @@ onMounted(() => {
             <p class="text-sm">Menentukan perilaku aplikasi dan timer otomatis.</p>
           </div>
           <div>
-            <FormSelect id="hiddenMode" v-model="hidden.mode" :options="modes" option-key="value" option-label="label" />
+            <FormSelect id="hiddenMode" v-model="hidden.mode" :options="modes" />
           </div>
         </div>
 
@@ -221,7 +221,7 @@ onMounted(() => {
             <p class="text-sm">Yang dilakukan saat timer otomatis habis.</p>
           </div>
           <div>
-            <FormSelect id="hiddenAction" v-model="hidden.action" :options="actions" option-key="value" option-label="label" />
+            <FormSelect id="hiddenAction" v-model="hidden.action" :options="actions" />
           </div>
         </div>
 
@@ -238,8 +238,8 @@ onMounted(() => {
     </template>
     <template #footer>
       <div class="flex justify-end gap-2">
-        <BasicButton color="red" icon="times" @click="hidden.showHiddenModal = false">Batal</BasicButton>
-        <BasicButton icon="check" @click="applySettings">Terapkan</BasicButton>
+        <BasicButton color="danger" :icon="faTimes" @click="hidden.showHiddenModal = false">Batal</BasicButton>
+        <BasicButton :icon="faCheck" @click="applySettings">Terapkan</BasicButton>
       </div>
     </template>
   </DialogModal>

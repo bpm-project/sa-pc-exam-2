@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import {computed, onMounted, reactive, ref} from 'vue';
 import { check } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
@@ -7,7 +7,8 @@ import {translateDate} from "@/assets/js/Mixins/TreeShake/dateTime.js";
 import ConfirmationModal from "@/components/Modals/ConfirmationModal.vue";
 import VueMarkdown from 'vue-markdown-render';
 import BasicCard from "@/components/Cards/BasicCard.vue";
-import BasicButton from "@/components/Buttons/BasicButton.vue";
+import { BasicButton } from '@bpmlib/vue-sabutton';
+import { faTimes } from '@fortawesome/free-solid-svg-icons';
 import {faCloudDownload} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 
@@ -144,8 +145,8 @@ onMounted(() => {
         </div>
       </template>
       <template #footer>
-        <BasicButton icon="times" color="red" :disabled="downloader.status > 0" @click="downloader.modalShow = false">Tidak Usah</BasicButton>
-        <BasicButton :icon="faCloudDownload" color="green" :on-loading="downloader.status > 0" @click="downloadUpdate">OKE GAS</BasicButton>
+        <BasicButton :icon="faTimes" color="danger" :disabled="downloader.status > 0" @click="downloader.modalShow = false">Tidak Usah</BasicButton>
+        <BasicButton :icon="faCloudDownload" color="success" :on-loading="downloader.status > 0" @click="downloadUpdate">OKE GAS</BasicButton>
       </template>
     </ConfirmationModal>
   </div>

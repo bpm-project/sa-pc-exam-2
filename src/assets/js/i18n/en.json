@@ -11,6 +11,7 @@
     "deleteNote": "Clear My Note",
     "storeNoteEmpty": "Mark Without Note",
     "storeNote": "Mark and Append Note",
+    "saveNotes": "Save Notes",
     "contExam": "Continue Exam",
     "finishExam": "Finish Now",
     "openEval": "Open Evaluation",
@@ -133,7 +134,8 @@
       "report": "Report Question",
       "commandPick": "Please pick one of the options by clicking at the card.",
       "optionPicked": "Option that you pick marked with",
-      "optionNote": "You can give note to the option by clicking at button with sign",
+      "optionNote": "You can add notes to the options with the Unsure button next to the question number.",
+      "doubt": "Unsure",
       "essayIntro": "Please write your answer in form below. The answer would not be saved if you didn't click at",
       "essayCont": "button.",
       "fileIntro": "Please upload your answer using form below. The answer would not be saved if you didn't click at",
@@ -147,7 +149,7 @@
     "note": {
       "modalTitle": "Manage Option Note",
       "yourNote": "Your Note...",
-      "explain": "This feature allows you to mark one or more answers when you are unsure. The answers you mark are saved for your reference only and are not considered final answers until you click on the answer."
+      "explain": "Write a note for one or more options when you are unsure. Clearing a note field deletes the note of that option. Notes are for your reference only and are not a final answer."
     },
     "finish": {
       "titleEarly": "Confirm To Finish Exam Early",

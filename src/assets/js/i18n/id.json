@@ -11,6 +11,7 @@
     "deleteNote": "Hapus Catatan",
     "storeNoteEmpty": "Tandai Tanpa Catatan",
     "storeNote": "Tandai dan Simpan Catatan",
+    "saveNotes": "Simpan Catatan",
     "contExam": "Lanjutkan Ujian",
     "finishExam": "Akhiri Sekarang",
     "openEval": "Buka Evaluasi",
@@ -133,7 +134,8 @@
       "report": "Laporkan Soal",
       "commandPick": "Silahkan pilih salah satu jawaban dengan klik di opsi.",
       "optionPicked": "Jawaban yang anda pilih ditandai dengan",
-      "optionNote": "Anda bisa menandai opsi untuk catatan anda dengan menekan tombol",
+      "optionNote": "Anda bisa memberi catatan pada opsi dengan menekan tombol Ragu-ragu di samping nomor soal.",
+      "doubt": "Ragu-ragu",
       "essayIntro": "Silahkan menuliskan jawaban anda di form dibawah. Jawaban belum disimpan apabila anda belum menekan tombol",
       "essayCont": ".",
       "fileIntro": "Silahkan mengunggah jawaban anda dengan menggunakan form dibawah. Jawaban belum disimpan apabila anda belum menekan tombol",
@@ -147,7 +149,7 @@
     "note": {
       "modalTitle": "Kelola Catatan Jawaban",
       "yourNote": "Catatan Anda...",
-      "explain": "Fitur ini memungkinkan Anda menandai 1 atau lebih jawaban saat anda ragu-ragu. Jawaban yang Anda tandai disimpan untuk diri anda sendiri dan belum dianggap sebagai jawaban final sampai Anda menekan di jawabannya."
+      "explain": "Tuliskan catatan untuk satu atau lebih opsi saat anda ragu-ragu. Mengosongkan kolom catatan akan menghapus catatan opsi tersebut. Catatan hanya untuk diri anda sendiri dan bukan jawaban final."
     },
     "finish": {
       "titleEarly": "Konfirmasi Mengakhiri Ujian Lebih Awal",

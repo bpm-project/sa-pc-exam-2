@@ -1,9 +1,10 @@
-<script setup>
+<script setup lang="ts">
 import {onMounted, onUnmounted, ref} from 'vue';
 import { useRouter } from 'vue-router';
 import BackgroundLayout from "@/layouts/BackgroundLayout.vue";
 import BasicCard from "@/components/Cards/BasicCard.vue";
-import BasicButton from "@/components/Buttons/BasicButton.vue";
+import { BasicButton } from '@bpmlib/vue-sabutton';
+import { faFileSignature, faReply } from '@fortawesome/free-solid-svg-icons';
 import {useI18n} from "vue-i18n";
 import {getCurrentWindow} from "@tauri-apps/api/window";
 
@@ -50,7 +51,7 @@ onUnmounted(() => {
       <BasicCard v-if="!iframeRef">
         <p class="mb-2 text-center">{{ t('post.notShown') }}</p>
         <div class="btn-group justify-center">
-          <BasicButton icon="file-signature" @click="openEval()">
+          <BasicButton :icon="faFileSignature" @click="openEval()">
             {{ t('button.openEval') }}
           </BasicButton>
         </div>
@@ -59,7 +60,7 @@ onUnmounted(() => {
         <p class="mb-2 text-center">{{ t('post.isFinish') }}</p>
         <div class="btn-group justify-center">
           <RouterLink to="/">
-            <BasicButton icon="reply">{{ t('button.mainPage') }}</BasicButton>
+            <BasicButton :icon="faReply">{{ t('button.mainPage') }}</BasicButton>
           </RouterLink>
         </div>
       </BasicCard>

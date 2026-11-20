@@ -1,9 +1,6 @@
 <script setup>
 
 import {reactive, ref} from 'vue';
-import FormTextarea from '@/components/Forms/FormTextarea.vue';
-import BasicButton from "@/components/Buttons/BasicButton.vue";
-import DialogModal from "@/components/Modals/DialogModal.vue";
 
 const modalControl = ref(false);
 const expression = ref('');

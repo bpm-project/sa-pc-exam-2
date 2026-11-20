@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { animate } from 'animejs';
@@ -7,7 +7,7 @@ import { mixins } from "@/assets/js/Mixins/mixinDeprecate.js";
 import ZoomCard from '@/components/Cards/ZoomCard.vue';
 import BasicCard from '@/components/Cards/BasicCard.vue';
 import LoadingCard from '@/components/Cards/LoadingCard.vue';
-import BasicButton from '@/components/Buttons/BasicButton.vue';
+import { BasicButton } from '@bpmlib/vue-sabutton';
 import LogoTitleCard from '@/components/Cards/LogoTitleCard.vue';
 import testGif from '@/assets/img/gif/test.gif';
 import truckGif from '@/assets/img/gif/truck-whoosh.gif';
@@ -19,10 +19,7 @@ import {changeDarkMode} from "@/assets/js/Mixins/TreeShake/browserBehavior.js";
 import UpdateCheck from "@/views/Component/UpdateCheck.vue";
 import SettingModal from "@/views/Component/SettingModal.vue";
 import PingTest from '@/views/PingTest.vue';
-import {
-  faCamera, faMicrophone,
-  faCircleCheck, faTimesCircle, faEllipsis, faCircleQuestion,
-} from '@fortawesome/free-solid-svg-icons';
+import { faCamera, faMicrophone, faCircleCheck, faTimesCircle, faEllipsis, faCircleQuestion, faArrowsRotate, faShieldHalved } from '@fortawesome/free-solid-svg-icons';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 
 const { t, locale } = useI18n();
@@ -165,7 +162,7 @@ const checkUpdate = () => {
             <p class="text-sm">{{ todaySchedules.error.message }}</p>
           </div>
           <div class="flex justify-center mt-2">
-            <BasicButton icon="arrows-rotate" @click="mountSchedule()">
+            <BasicButton :icon="faArrowsRotate" @click="mountSchedule()">
               {{ t('button.retry') }}
             </BasicButton>
           </div>
@@ -248,7 +245,7 @@ const checkUpdate = () => {
                 </div>
               </div>
               <div v-if="!doesAllGranted" class="flex justify-center mt-3">
-                <BasicButton icon="shield-halved" @click="requestMediaAccess()">
+                <BasicButton :icon="faShieldHalved" @click="requestMediaAccess()">
                   Izinkan Akses
                 </BasicButton>
               </div>

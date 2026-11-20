@@ -3,8 +3,9 @@ import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { saToast } from '@bpmlib/vue-satoast';
 import BasicCard from '@/components/Cards/BasicCard.vue';
-import BasicButton from '@/components/Buttons/BasicButton.vue';
-import FormSwitch from '@/components/Forms/FormSwitch.vue';
+import { BasicButton } from '@bpmlib/vue-sabutton';
+import { faSave, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
+import { FormSwitch } from '@bpmlib/vue-saform';
 
 const emit = defineEmits<{
   agree: [];
@@ -48,13 +49,13 @@ const onNext = () => {
   </BasicCard>
 
   <BasicCard>
-    <FormSwitch v-model="agreed" :label="t('cameraAgree.switchLabel')" />
+    <FormSwitch v-model="agreed" switch-position="right" :label="t('cameraAgree.switchLabel')" />
 
     <div class="flex gap-2 mt-3">
-      <BasicButton icon="times-circle" expanded color="red" @click="emit('back')">
+      <BasicButton :icon="faTimesCircle" expanded color="danger" @click="emit('back')">
         {{ t('cameraAgree.wrong') }}
       </BasicButton>
-      <BasicButton v-if="agreed" icon="save" expanded color="green" @click="onNext">
+      <BasicButton v-if="agreed" :icon="faSave" expanded color="success" @click="onNext">
         {{ t('cameraAgree.next') }}
       </BasicButton>
     </div>

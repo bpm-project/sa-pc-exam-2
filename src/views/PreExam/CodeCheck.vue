@@ -5,8 +5,9 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import axios from 'axios';
 import { saToast } from '@bpmlib/vue-satoast';
 import BasicCard from '@/components/Cards/BasicCard.vue';
-import FormInput from '@/components/Forms/FormInput.vue';
-import BasicButton from '@/components/Buttons/BasicButton.vue';
+import { FormInput } from '@bpmlib/vue-saform';
+import { BasicButton } from '@bpmlib/vue-sabutton';
+import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import { page1Req } from '@/assets/js/Mixins/Class/Request';
 import { useI18n } from 'vue-i18n';
 import cameraBroken from '@/assets/img/svg/camera-broken.svg';
@@ -183,11 +184,11 @@ onMounted(() => {
       <BasicCard class="text-center">
         <p class="text-sm mb-2">{{ t('cameraCode.codeInput') }}:</p>
         <form id="field1">
-          <FormInput id="id-peserta" :label="t('cameraCode.codeForm')" v-model="userCode.value" m0 required />
+          <FormInput id="id-peserta" :label="t('cameraCode.codeForm')" v-model="userCode.value" required />
         </form>
       </BasicCard>
 
-      <BasicButton icon="paper-plane" form="field1" as-submit expanded @click="doCheck()">
+      <BasicButton :icon="faPaperPlane" form="field1" as-submit expanded @click="doCheck()">
         {{ t('button.check') }}
       </BasicButton>
     </template>

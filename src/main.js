@@ -5,6 +5,10 @@ import i18n from "./assets/js/i18n/i18n.js";
 import router from "./router/index.js";
 import '@/assets/js/icon';
 import '@bpmlib/vue-satoast/style.css';
+import '@bpmlib/vue-sabutton/style.css';
+import '@bpmlib/vue-saform/style.css';
+import '@bpmlib/vue-saform/quill.css';
+import '@bpmlib/vue-samodal/style.css';
 
 const defaults = { internalMode: 'external', countdownAction: 'hibernate', shutdownTimer: '90' };
 for (const [key, val] of Object.entries(defaults)) {

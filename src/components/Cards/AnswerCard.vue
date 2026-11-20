@@ -1,5 +1,4 @@
-<script setup>
-import { computed } from 'vue';
+<script setup lang="ts">
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import BasicCard from '@/components/Cards/BasicCard.vue';
 
@@ -11,13 +10,7 @@ const props = defineProps({
   alphabet: String,
 });
 
-const emit = defineEmits(['clickNote', 'pickAnswer']);
-
-const notesColor = computed(() => {
-  const haveNote = 'bg-ternary hover:bg-ternary-alt rounded-tr-xl';
-  const noNote = 'bg-gray-800 hover:bg-gray-700/70 rounded-r-xl';
-  return props.notes ? haveNote : noNote;
-});
+const emit = defineEmits(['pickAnswer']);
 
 const clickPick = () => {
   if (!props.selected) emit('pickAnswer', props.optionIndex);
@@ -38,18 +31,8 @@ const clickPick = () => {
     </div>
 
     <BasicCard no-padding :color="selected ? 'green' : 'sub'" class="w-full">
-      <div class="grid gap-2 grid-cols-[auto_3rem]">
-        <div class="px-4 py-2 cursor-pointer" @click="clickPick">
-          <slot />
-        </div>
-
-        <div
-          class="flex items-center justify-center text-white"
-          :class="notesColor"
-          @click="emit('clickNote', notes)"
-        >
-          <font-awesome-icon :icon="notes ? 'comment-dots' : 'comment'"></font-awesome-icon>
-        </div>
+      <div class="px-4 py-2 cursor-pointer" @click="clickPick">
+        <slot />
       </div>
 
       <div v-if="notes" class="bg-ternary text-white px-4 py-1 rounded-b-xl italic">

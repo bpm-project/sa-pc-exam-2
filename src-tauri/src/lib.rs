@@ -1,5 +1,5 @@
 use std::process::Command;
-use tauri::command;
+use tauri::{command, Manager};
 
 #[command]
 fn trigger_shutdown_state(command: &str) -> Result<(), String> {
@@ -86,9 +86,27 @@ fn validate_input(user_input: String) -> bool {
     user_input == "selm1945c3pu;"
 }
 
+/// Reads an on/off flag from `.env`: only an explicit `false` or `0` turns it off.
+fn flag_enabled(value: Option<&str>) -> bool {
+    !matches!(
+        value.map(|v| v.trim().to_ascii_lowercase()).as_deref(),
+        Some("false" | "0")
+    )
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .setup(|app| {
+            // tauri.conf.json already sets contentProtected to true, so only an explicit
+            // VITE_CONTENT_PROTECTION=false in .env switches it off.
+            if !flag_enabled(option_env!("VITE_CONTENT_PROTECTION")) {
+                if let Some(window) = app.get_webview_window("main") {
+                    window.set_content_protected(false)?;
+                }
+            }
+            Ok(())
+        })
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .invoke_handler(tauri::generate_handler![

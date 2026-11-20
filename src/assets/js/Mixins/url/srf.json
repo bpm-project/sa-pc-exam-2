@@ -114,7 +114,8 @@
     "schemes.deactivate": "api/schemes/deactivate/{scheme_id}",
     "schemes.restore": "api/schemes/restore/{scheme_id}",
     "sttk_schedule.deactivate": "api/sttk-schedule/deactivate/{scheme_id}",
-    "sttk_schedule.update": "api/sttk-schedule/update/{id}"
+    "sttk_schedule.update": "api/sttk-schedule/update/{id}",
+    "v2.exam.question.notes.sync": "api/v2/ujian/pertanyaan/{participantExamQuestion}/catatan"
   },
   "delete": {
     "assessors.delete": "api/assessors/delete/{id}"

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 import { ref, computed, reactive, watch, onMounted, nextTick, onUnmounted } from 'vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
@@ -7,10 +7,9 @@ import NavBar from '@/components/Navs/NavBar.vue';
 import BasicCard from '@/components/Cards/BasicCard.vue';
 import NumberButton from '@/components/Buttons/NumberButton.vue';
 import AnswerCard from '@/components/Cards/AnswerCard.vue';
-import BasicButton from '@/components/Buttons/BasicButton.vue';
-import FormQuill from '@/components/Forms/FormQuill.vue';
-import DialogModal from '@/components/Modals/DialogModal.vue';
-import FormTextarea from '@/components/Forms/FormTextarea.vue';
+import { BasicButton } from '@bpmlib/vue-sabutton';
+import { FormQuill } from '@bpmlib/vue-saform/quill';
+import { FormTextarea } from '@bpmlib/vue-saform';
 import ConfirmationModal from '@/components/Modals/ConfirmationModal.vue';
 import { examReq } from "@/assets/js/Mixins/Class/Request";
 import LoadingCard from '@/components/Cards/LoadingCard.vue';
@@ -21,13 +20,14 @@ import meditationGif from '@/assets/img/gif/meditation.gif';
 import { useRouter } from "vue-router";
 import { TabGroup, TabPanel, TabPanels } from '@headlessui/vue';
 import TabButtons from '@/components/Tabs/TabButtons.vue';
-import { faCalculator, faListOl } from '@fortawesome/free-solid-svg-icons';
+import { faCalculator, faListOl, faCircleQuestion, faPaperPlane, faAnglesLeft, faAnglesRight, faFlagCheckered, faTimes } from '@fortawesome/free-solid-svg-icons';
 import PingTest from "@/views/PingTest.vue";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import {translateDateRange} from "../assets/js/Mixins/TreeShake/dateTime.js";
 import {nthAlphabet} from "@/assets/js/Mixins/TreeShake/alphaNumeric.js";
 import {defaultDarkModeCheck} from "@/assets/js/Mixins/TreeShake/browserBehavior.js";
 import { saToast } from '@bpmlib/vue-satoast';
+import { onKeyStroke } from '@vueuse/core';
 import TheCalculator from "@/views/Component/TheCalculator.vue";
 
 const { t } = useI18n({ useScope: 'global' });
@@ -155,6 +155,7 @@ const goToEvaluation = () => {
 };
 
 const finishExam = async () => {
+  noteMode.open = false;
   clearInterval(timerInterval);
   confirmEnd.open = true;
   confirmEnd.loadStatus = 0;
@@ -356,91 +357,76 @@ const getQuestionNumbers = async () => {
     });
 };
 
-// Pengaturan Notes
-const notesModal = reactive({
-  show: false,
-  disabled: false,
-  data: {
-    id: '',
-    notes: '',
-    status: false,
-  },
+// Mode catatan: satu tombol membuka kolom catatan untuk semua opsi pada soal yang sedang dibuka
+const noteMode = reactive({
+  open: false,
+  saving: false,
+  drafts: {} as Record<string, string>,
 });
 
-const openNotesModal = (theNote, optionId) => {
-  if (!theNote) {
-    notesModal.data = {
-      id: optionId,
-      notes: '',
-      status: false,
-    };
-  } else {
-    notesModal.data = {
-      id: optionId,
-      notes: theNote.notes,
-      status: true,
-    };
-  }
-  notesModal.disabled = false;
-  notesModal.show = true;
+const currentHasNotes = computed(() => {
+  const options = questionDetail.data?.options ?? [];
+  return options.some((option) => option.note);
+});
+
+const openNoteMode = () => {
+  const drafts: Record<string, string> = {};
+  questionDetail.data.options.forEach((option) => {
+    drafts[option.id] = option.note?.notes ?? '';
+  });
+  noteMode.drafts = drafts;
+  noteMode.open = true;
 };
 
-const addNote = async () => {
-  notesModal.disabled = true;
+const closeNoteMode = () => {
+  if (noteMode.saving) return;
+  noteMode.open = false;
+};
+
+const saveNotes = async () => {
+  const options = questionDetail.data.options;
+  const changed = options
+    .map((option) => ({
+      option,
+      text: (noteMode.drafts[option.id] ?? '').trim(),
+    }))
+    .filter(({ option, text }) => text !== (option.note?.notes ?? '').trim());
+
+  if (changed.length === 0) {
+    noteMode.open = false;
+    return;
+  }
+
+  noteMode.saving = true;
   const start = Date.now();
   await examReq
     .setBody({
-      participant_exam_question_id: questionDetail.data.participant_exam_question_id,
-      notes: notesModal.data.notes,
-      option_id: notesModal.data.id,
+      notes: changed.map(({ option, text }) => ({ option_id: option.id, notes: text === '' ? null : text })),
     })
-    .post('participant_exam.modify_note')
+    .put('v2.exam.question.notes.sync', {
+      participantExamQuestion: questionDetail.data.participant_exam_question_id,
+    })
     .then((res) => {
-      examDetail.data.questions[questionDetail.index].has_notes = true;
-      questionDetail.data.options.forEach((option) => {
-        if (option.id === notesModal.data.id) {
-          option.note = notesModal.data;
-        }
+      changed.forEach(({ option, text }) => {
+        option.note = text === '' ? null : { ...(option.note ?? {}), notes: text };
       });
-      notesModal.show = false;
+      examDetail.data.questions[questionDetail.index].has_notes = options.some((option) => option.note);
+      noteMode.open = false;
       saToast.success(res.data.message);
-      pushAction('add_note', Date.now() - start, 200);
+      pushAction('sync_note', Date.now() - start, 200);
     })
     .catch((error) => {
-      notesModal.show = false;
       saToast.error(error.message);
-      pushAction('add_note', Date.now() - start, error.response.status);
+      pushAction('sync_note', Date.now() - start, error.response?.status ?? 0);
     })
     .finally(() => {
-      notesModal.disabled = false;
+      noteMode.saving = false;
     });
 };
 
-const removeNote = async () => {
-  const start = Date.now();
-  await examReq
-    .setBody({
-      participant_exam_question_id: questionDetail.data.participant_exam_question_id,
-      option_id: notesModal.data.id,
-    })
-    .post('participant_exam.remove_note')
-    .then((res) => {
-      examDetail.data.questions[questionDetail.index].has_notes = false;
-      questionDetail.data.options.forEach((option) => {
-        if (option.id === notesModal.data.id) {
-          option.note = null;
-        }
-      });
-      notesModal.show = false;
-      saToast.success(res.data.message);
-      pushAction('del_note', Date.now() - start, 200);
-    })
-    .catch((error) => {
-      notesModal.show = false;
-      saToast.error(error.message);
-      pushAction('del_note', Date.now() - start, error.response.status);
-    });
-};
+onKeyStroke('Escape', () => {
+  if (noteMode.open) closeNoteMode();
+});
 
 const stringClock = computed(() => {
   const { h, m, s } = timerTime;
@@ -475,7 +461,9 @@ onMounted(() => {
   getQuestionNumbers();
   defaultDarkModeCheck();
   getCurrentWindow().setFullscreen(true);
-  getCurrentWindow().setAlwaysOnTop(true);
+  // Always on top unless VITE_ALWAYS_ON_TOP is explicitly false or 0 in .env.
+  const alwaysOnTop = !['false', '0'].includes(String(import.meta.env.VITE_ALWAYS_ON_TOP).trim().toLowerCase());
+  if (alwaysOnTop) getCurrentWindow().setAlwaysOnTop(true);
 });
 
 onUnmounted(() => {
@@ -623,11 +611,15 @@ onUnmounted(() => {
                   <div>
                     <div class="flex items-center justify-between gap-2 mb-2">
                       <h3>{{ t('exam.quest.num') }} {{ questionDetail.index + 1 }}</h3>
-                      <div>
-                        <BasicButton v-show="false" color="red" icon="flag" small>{{
-                          t('exam.quest.report')
-                        }}</BasicButton>
-                      </div>
+                      <BasicButton
+                        v-if="questionDetail.data.type === 'mc'"
+                        color="ternary"
+                        :outline="!currentHasNotes"
+                        :icon="faCircleQuestion"
+                        @click="openNoteMode"
+                      >
+                        {{ t('exam.quest.doubt') }}
+                      </BasicButton>
                     </div>
                     <div class="no-copy">
                       <vue-mathjax :formula="questionDetail.data.question" :safe="false" />
@@ -636,30 +628,50 @@ onUnmounted(() => {
                 </BasicCard>
 
                 <!-- Daftar Jawaban MC -->
-                <BasicCard v-if="questionDetail.data.type === 'mc'">
+                <BasicCard v-if="questionDetail.data.type === 'mc'" :class="noteMode.open ? 'relative z-[120]' : ''">
                   <div class="mb-4 text-xs italic text-center">
                     <p>{{ t('exam.quest.commandPick') }}</p>
                     <p>
                       {{ t('exam.quest.optionPicked') }}
                       <font-awesome-icon icon="check" class="mx-1"></font-awesome-icon>
                       . {{ t('exam.quest.optionNote') }}
-                      <font-awesome-icon icon="comment" class="mx-1"> </font-awesome-icon>
                     </p>
                   </div>
+                  <p v-if="noteMode.open" class="mb-4 text-sm text-center">{{ t('exam.note.explain') }}</p>
                   <div class="grid grid-cols-1 gap-4">
-                    <AnswerCard
-                      v-for="(option, num) in questionDetail.data.options"
-                      :alphabet="nthAlphabet(num)"
-                      :key="option.id"
-                      class="cursor-pointer no-copy"
-                      :notes="option.note"
-                      :selected="option.is_chosen"
-                      @pick-answer="selectOption(option.id, num)"
-                      @click-note="openNotesModal(option.note, option.id)"
-                    >
-                      <!-- cek jika jawaban dipilih -->
-                      <vue-mathjax :formula="option.option" :safe="false" />
-                    </AnswerCard>
+                    <div v-for="(option, num) in questionDetail.data.options" :key="option.id">
+                      <AnswerCard
+                        :alphabet="nthAlphabet(num)"
+                        class="no-copy"
+                        :class="noteMode.open ? 'pointer-events-none' : 'cursor-pointer'"
+                        :notes="option.note"
+                        :selected="option.is_chosen"
+                        @pick-answer="selectOption(option.id, num)"
+                      >
+                        <!-- cek jika jawaban dipilih -->
+                        <vue-mathjax :formula="option.option" :safe="false" />
+                      </AnswerCard>
+
+                      <div v-if="noteMode.open" class="pl-14 mt-2">
+                        <FormTextarea
+                          :id="`note-${option.id}`"
+                          v-model="noteMode.drafts[option.id]"
+                          :label="`${t('exam.note.yourNote')} (${nthAlphabet(num)})`"
+                          :rows="2"
+                          :maxlength="10000"
+                          :disabled="noteMode.saving"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div v-if="noteMode.open" class="flex justify-end gap-2 mt-4">
+                    <BasicButton :icon="faTimes" color="danger" :disabled="noteMode.saving" @click="closeNoteMode">
+                      {{ t('button.cancel') }}
+                    </BasicButton>
+                    <BasicButton :icon="faPaperPlane" color="success" :on-loading="noteMode.saving" @click="saveNotes">
+                      {{ t('button.saveNotes') }}
+                    </BasicButton>
                   </div>
                 </BasicCard>
 
@@ -669,9 +681,9 @@ onUnmounted(() => {
                     {{ t('exam.quest.essayIntro') }}
                     <span class="font-extrabold text-green-500">{{ t('button.sendAns') }}.</span> {{ t('exam.quest.essayCont') }}
                   </p>
-                  <FormQuill v-model="questionDetail.data.freetext_answer" :label="t('exam.quest.yourAns')" />
+                  <FormQuill id="freetext-answer" v-model="questionDetail.data.freetext_answer" :label="t('exam.quest.yourAns')" />
                   <div class="mt-2 btn-group">
-                    <BasicButton icon="paper-plane" color="green" expanded @click="descriptionAnswer">
+                    <BasicButton :icon="faPaperPlane" color="success" expanded @click="descriptionAnswer">
                       {{ t('button.sendAns') }}
                     </BasicButton>
                   </div>
@@ -682,7 +694,7 @@ onUnmounted(() => {
               <div class="flex gap-4 stretch-flex">
                 <BasicButton
                   color="primary"
-                  icon="angles-left"
+                  :icon="faAnglesLeft"
                   :disabled="questionDetail.index === 0"
                   @click="
                     getQuestionDetailByNumber(
@@ -696,7 +708,7 @@ onUnmounted(() => {
 
                 <BasicButton
                   color="primary"
-                  icon="angles-right"
+                  :icon="faAnglesRight"
                   :disabled="questionDetail.index === examDetail.data.questions.length - 1"
                   @click="
                     getQuestionDetailByNumber(
@@ -787,7 +799,7 @@ onUnmounted(() => {
                       </div>
 
                       <div class="flex justify-center mt-4">
-                        <BasicButton icon="flag-checkered" color="red" @click="confirmEnd.open = true">
+                        <BasicButton :icon="faFlagCheckered" color="danger" @click="confirmEnd.open = true">
                           {{ t('button.finish') }}
                         </BasicButton>
                       </div>
@@ -805,31 +817,10 @@ onUnmounted(() => {
       </template>
     </div>
 
-    <!-- Modal Catatan -->
-    <DialogModal :show="notesModal.show" :closeable="!notesModal.disabled" @close="notesModal.show = false">
-      <template #title>{{ t('exam.note.modalTitle') }}</template>
-      <template #content>
-        <p class="text-sm">{{ t('exam.note.explain') }}</p>
-        <FormTextarea id="note-question" v-model="notesModal.data.notes" :label="t('exam.note.yourNote')"/>
-      </template>
-      <template #footer>
-        <BasicButton icon="times" color="red" :disabled="notesModal.disabled" @click="notesModal.show = false">
-          {{ t('button.cancel') }}
-        </BasicButton>
-        <BasicButton
-          v-if="notesModal.data.status"
-          icon="trash-alt"
-          color="red"
-          :on-loading="notesModal.disabled"
-          @click="removeNote"
-        >
-          {{ t('button.deleteNote') }}
-        </BasicButton>
-        <BasicButton icon="paper-plane" color="green" :on-loading="notesModal.disabled" @click="addNote()">
-          {{ notesModal.data.notes ? t('button.storeNote') : t('button.storeNoteEmpty') }}
-        </BasicButton>
-      </template>
-    </DialogModal>
+    <!-- Dim overlay for note mode, the answer card is lifted above it -->
+    <Teleport to="body">
+      <div v-if="noteMode.open" class="fixed inset-0 z-[110] bg-black/50"></div>
+    </Teleport>
 
     <!-- Confirmation 1 -->
     <ConfirmationModal
@@ -901,16 +892,16 @@ onUnmounted(() => {
         <BasicButton
           v-if="timer > 0"
           :disabled="confirmEnd.loadStatus === 0"
-          icon="times"
-          color="green"
+          :icon="faTimes"
+          color="success"
           @click="closeAll()"
         >
           {{ t('button.contExam') }}
         </BasicButton>
         <BasicButton
           :on-loading="confirmEnd.loadStatus === 0"
-          icon="flag-checkered"
-          color="red"
+          :icon="faFlagCheckered"
+          color="danger"
           @click="handleFinishButton"
         >
           {{ t('button.finishExam') }}
@@ -944,10 +935,10 @@ onUnmounted(() => {
         <p class="mt-4 text-sm">{{ t('exam.finish.preConfirm2Body', { n: unansweredQuestions }) }}</p>
       </template>
       <template #footer>
-        <BasicButton icon="times" color="green" @click="closeAll()">
+        <BasicButton :icon="faTimes" color="success" @click="closeAll()">
           {{ t('exam.finish.noGoBack') }}
         </BasicButton>
-        <BasicButton icon="flag-checkered" color="red" @click="preConfirm3.open = true">
+        <BasicButton :icon="faFlagCheckered" color="danger" @click="preConfirm3.open = true">
           {{ t('exam.finish.yesFinish1') }}
         </BasicButton>
       </template>
@@ -979,12 +970,12 @@ onUnmounted(() => {
         <p class="mt-4 text-sm font-semibold">{{ t('exam.finish.preConfirm3Body', { n: unansweredQuestions }) }}</p>
       </template>
       <template #footer>
-        <BasicButton icon="times" color="green" @click="closeAll()">
+        <BasicButton :icon="faTimes" color="success" @click="closeAll()">
           {{ t('exam.finish.noGoBack') }}
         </BasicButton>
         <BasicButton
-          icon="flag-checkered"
-          color="red"
+          :icon="faFlagCheckered"
+          color="danger"
           :disabled="finalDelayCount > 0"
           @click="finishExam()"
         >

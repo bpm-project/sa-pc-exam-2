@@ -22,15 +22,16 @@
       </p>
     </template>
     <template #footer>
-      <basic-button icon="times-circle" color="green" @click="controlVariable.allFalse()">Tidak Jadi</basic-button>
-      <basic-button icon="trash-alt" color="red" @click="deleteEvent">Iya, Hapus</basic-button>
+      <basic-button :icon="faTimesCircle" color="success" @click="controlVariable.allFalse()">Tidak Jadi</basic-button>
+      <basic-button :icon="faTrashAlt" color="danger" @click="deleteEvent">Iya, Hapus</basic-button>
     </template>
   </confirmation-modal>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import ConfirmationModal from '@/components/Modals/ConfirmationModal.vue';
-import BasicButton from '@/components/Buttons/BasicButton.vue';
+import { BasicButton } from '@bpmlib/vue-sabutton';
+import { faTimesCircle, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 
 const props = defineProps({
   /**

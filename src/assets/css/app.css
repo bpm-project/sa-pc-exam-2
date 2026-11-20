@@ -3,6 +3,11 @@
 @custom-variant dark (&:where(.dark, .dark *));
 @plugin '@tailwindcss/forms';
 
+@source '../../../node_modules/@bpmlib/vue-satoast/dist';
+@source '../../../node_modules/@bpmlib/vue-sabutton/dist';
+@source '../../../node_modules/@bpmlib/vue-saform/dist';
+@source '../../../node_modules/@bpmlib/vue-samodal/dist';
+
 @theme {
     --color-light: #fdf6ed;
     --color-light-alt: #faebd7;
@@ -29,12 +34,45 @@
     --color-ternary-dark: #8d035f;
     --color-ternary-dark-alt: #d5048f;
 
+    --color-primary-foreground: #ffffff;
+    --color-secondary-foreground: #ffffff;
+    --color-ternary-foreground: #ffffff;
+
     --font-sans:
             Nunito, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
             'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif,
             'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
     --text-xxs: 0.65rem;
+}
+
+.dark {
+    --color-primary: var(--color-primary-dark);
+    --color-primary-alt: var(--color-primary-dark-alt);
+
+    --color-secondary: var(--color-secondary-dark);
+    --color-secondary-alt: var(--color-secondary-dark-alt);
+
+    --color-ternary: var(--color-ternary-dark);
+    --color-ternary-alt: var(--color-ternary-dark-alt);
+}
+
+/*
+  The local ConfirmationModal and MessageModal sit at z-101, above the z-100 header.
+  vue-samodal and vue-saform default their panels to z-index 40, so match the same
+  stacking. The select panel must open above a dialog it is placed in.
+*/
+:root {
+    --sa-md--panel-z: 101;
+    --sa-fm-panel-z: 102;
+}
+
+/*
+  The global `h1..h6` rule in the base layer sets a text color directly on every heading,
+  which beats the color vue-samodal's header inherits. Let the dialog title inherit again.
+*/
+.sa-md--dialog-title {
+    color: inherit;
 }
 
 /*
